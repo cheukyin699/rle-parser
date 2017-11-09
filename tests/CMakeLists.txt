@@ -13,8 +13,8 @@ target_link_libraries(rleTest rle)
 
 add_test(
     NAME parsingtest
-    COMMAND $<TARGET_FILE:rleTest>
-    WORKSPACE ${rle-parser_SOURCE_DIR}
+    COMMAND build/tests/rleTest
+    WORKING_DIRECTORY ${rle-parser_SOURCE_DIR}
 )
 
 configure_file(

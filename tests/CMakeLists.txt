@@ -7,8 +7,6 @@ add_executable(rleTest ${test-src})
 
 include_directories("${rle-parser_SOURCE_DIR}/include")
 
-target_link_libraries(rleTest gtest)
-target_link_libraries(rleTest gtest_main)
 target_link_libraries(rleTest rle)
 
 add_test(

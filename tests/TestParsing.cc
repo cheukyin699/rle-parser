@@ -1,21 +1,24 @@
-#include "gtest/gtest.h"
+#include "attounit.h"
 #include "Parser.h"
 #include "Config.h"
 
 #include <iostream>
 
-#define FN_CONCAT(a, b) (a b)
-
 using namespace std;
 
-TEST(TestParsing, ParseNormalFile) {
-    rle::Board b = rle::parse(FN_CONCAT(SRCDIR, "examples/normal1.rle"));
+TEST_SUITE(Parsing);
+
+BEFORE_EACH() {}
+AFTER_EACH() {}
+
+TEST_CASE(Parsing_parses_file) {
+    rle::Board b = rle::parse(SRCDIR "examples/normal1.rle");
 
     // Meta-data testing
-    ASSERT_EQ(b.getName(), "Gosper glider gun");
-    ASSERT_EQ(b.getW(), 36);
-    ASSERT_EQ(b.getH(), 9);
-    ASSERT_EQ(b.getRule(), "B3/S23");
+    ASSERT_EQUAL(b.getName(), "Gosper glider gun");
+    ASSERT_EQUAL(b.getW(), 36);
+    ASSERT_EQUAL(b.getH(), 9);
+    ASSERT_EQUAL(b.getRule(), "B3/S23");
     // Actual data testing
     const string CORRECT =
 "                        X           \n"
@@ -27,5 +30,5 @@ TEST(TestParsing, ParseNormalFile) {
 "          X     X       X           \n"
 "           X   X                    \n"
 "            XX                      \n";
-    ASSERT_EQ(b.getBoard(), CORRECT);
+    ASSERT_EQUAL(b.getBoard(), CORRECT);
 }

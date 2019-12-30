@@ -11,7 +11,7 @@ TEST_SUITE(Parsing);
 BEFORE_EACH() {}
 AFTER_EACH() {}
 
-TEST_CASE(Parsing_parses_file) {
+TEST_CASE(parses_file) {
     rle::Board b = rle::parse(SRCDIR "examples/normal1.rle");
 
     // Meta-data testing

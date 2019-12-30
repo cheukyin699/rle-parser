@@ -1,9 +1,10 @@
-#include "Utils.h"
-#include "Parser.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <regex>
+
+#include "Utils.h"
+#include "Parser.h"
 
 using namespace std;
 using namespace rle;
@@ -67,77 +68,67 @@ Board rle::parse(const char* fn) {
 }
 
 void rle::parseComment(Board& b, string line) {
-    try {
-        switch (line[0]) {
-            case 'N':
-                // Name of pattern
-                b.setName(rle::trim(line.substr(1, line.npos)));
-                break;
-            case 'O':
-                // Says when and whom the file was created, usually produced by
-                // XLife
-                break;
-            case 'c':
-                // Indicates comment, but not recommended. Same as 'C'.
-                // TODO Warn user
-            case 'C':
-                // Indicates that a line of comment follows. A really common use
-                // of # lines
-                break;
-            case 'P':
-                // Same as R, produced by Life32, representing the top-left
-                // corner of the pattern
-            case 'R':
-                // Gives coordinates of the top-left corner of pattern, usually
-                // negative, with the intention of placing the center of the
-                // pattern at the point of origin.
-                break;
-            case 'r':
-                // Gives the rules for a pattern in the form of
-                // '<survive>/<birth>' (e.g. 23/3 for Life). Usually present for
-                // files created by XLife. Standard method is not in comments.
-                break;
-            default:
-                // TODO Give warning about irregular comment
-                break;
-        }
-    } catch (exception ex) {
-        // TODO
-    }
+	switch (line[0]) {
+		case 'N':
+			// Name of pattern
+			b.setName(trim(line.substr(1, line.npos)));
+			break;
+		case 'O':
+			// Says when and whom the file was created, usually produced by
+			// XLife
+			break;
+		case 'c':
+			// Indicates comment, but not recommended. Same as 'C'.
+			cerr << "Warning: using 'c' for comments is not recommended." << endl;
+		case 'C':
+			// Indicates that a line of comment follows. A really common use
+			// of # lines
+			break;
+		case 'P':
+			// Same as R, produced by Life32, representing the top-left
+			// corner of the pattern
+		case 'R':
+			// Gives coordinates of the top-left corner of pattern, usually
+			// negative, with the intention of placing the center of the
+			// pattern at the point of origin.
+			break;
+		case 'r':
+			// Gives the rules for a pattern in the form of
+			// '<survive>/<birth>' (e.g. 23/3 for Life). Usually present for
+			// files created by XLife. Standard method is not in comments.
+			break;
+		default:
+			// TODO Give warning about irregular comment
+			break;
+	}
 }
 
 void rle::parseDimension(Board& b, string line) {
-    // Remove all spaces from line
-    line.erase(remove(line.begin(), line.end(), ' '),
-               line.end());
-    // Iterate through every comma
-    smatch m;
-    for (int i = line.find(',');
-            i != line.npos;
-            line.erase(0, i+1), i = line.find(',')) {
-        string s = line.substr(0, i);
+	// Remove all spaces from line
+	line.erase(remove(line.begin(), line.end(), ' '),
+			line.end());
+	// Iterate through every comma
+	smatch m;
+	int i;
+	int curr = 0;
+	do {
+		i = line.find(',', curr);
+		string s = i != line.npos ? line.substr(curr, i - curr) : line.substr(curr);
 
-        if (regex_match(s, m, OBJEQ)) {
-            if (m[1] == "x") {
-                b.setW(stoi(m[2]));
-            } else if (m[1] == "y") {
-                b.setH(stoi(m[2]));
-            } else {
-                // TODO Unknown dimension handling
-            }
-        } else {
-            // TODO Invalid format handling
-        }
-    }
+		if (regex_match(s, m, OBJEQ)) {
+			if (m[1] == "x") {
+				b.setW(stoi(m[2]));
+			} else if (m[1] == "y") {
+				b.setH(stoi(m[2]));
+			} else if (m[1] == "rule") {
+				b.setRule(m[2]);
+			} else {
+				// TODO Unknown dimension handling
+			}
+		} else {
+			// TODO Invalid format handling
+		}
 
-    // If there is still something left (rule)
-    if (!line.empty() && regex_match(line, m, OBJEQ)) {
-        if (m[1] == "rule") {
-            b.setRule(m[2]);
-        } else {
-            // TODO Unknown rule handling
-        }
-    } else {
-        // TODO Invalid format handling
-    }
+		curr = i + 1;
+	} while (i != line.npos);
 }

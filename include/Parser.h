@@ -14,6 +14,7 @@ namespace rle {
 
     void parseComment(Board&, string);
     void parseDimension(Board&, string);
+	bool parseLine(Board&, string, unsigned&, unsigned&);
 }
 
 #endif

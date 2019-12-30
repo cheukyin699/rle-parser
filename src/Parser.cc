@@ -16,8 +16,8 @@ Board rle::parse(const char* fn) {
         string line;
         bool dimensionsGotten = false;
         bool forcedEOF = false;
-        unsigned xpos = 0, ypos = 0;
-        string quantity = "";
+		unsigned xpos = 0;
+		unsigned ypos = 0;
         while (getline(f, line) && !forcedEOF) {
             // Remove empty lines
             if (line.empty()) continue;
@@ -33,31 +33,7 @@ Board rle::parse(const char* fn) {
                 dimensionsGotten = true;
             } else {
                 // Line is the contents
-                // TODO Parse the pattern itself
-                for (auto c : line) {
-                    if (isdigit(c)) {
-                        quantity += c;
-                    } else if (c == 'b' || c == 'o') {
-                        // TODO Dead cell or Alive cell
-                        bool isAlive = c == 'o';
-                        unsigned amount = quantity.empty()? 1 : stoi(quantity);
-                        quantity = "";
-                        for (unsigned i = 0; i < amount; ++i) {
-                            b.set(xpos + i, ypos, isAlive);
-                        }
-                        xpos += amount;
-                    } else if (c == '$') {
-                        // End of line
-                        ypos++;
-                        xpos = 0;
-                    } else if (c == '!') {
-                        // End of file
-                        forcedEOF = true;
-                        break;
-                    } else {
-                        // TODO Handle other characters
-                    }
-                }
+				forcedEOF = parseLine(b, line, xpos, ypos);
             }
         }
         return b;
@@ -65,6 +41,34 @@ Board rle::parse(const char* fn) {
         cerr << "Error: file not found" << endl;
         throw 0;
     }
+}
+
+bool rle::parseLine(Board& b, string line, unsigned& xpos, unsigned& ypos) {
+	string quantity = "";
+	for (auto c : line) {
+		if (isdigit(c)) {
+			quantity += c;
+		} else if (c == 'b' || c == 'o') {
+			// TODO Dead cell or Alive cell
+			bool isAlive = c == 'o';
+			unsigned amount = quantity.empty()? 1 : stoi(quantity);
+			quantity = "";
+			for (unsigned i = 0; i < amount; ++i) {
+				b.set(xpos + i, ypos, isAlive);
+			}
+			xpos += amount;
+		} else if (c == '$') {
+			// End of line
+			ypos++;
+			xpos = 0;
+		} else if (c == '!') {
+			// End of file
+			return true;
+		} else {
+			// TODO Handle other characters
+		}
+	}
+	return false;
 }
 
 void rle::parseComment(Board& b, string line) {
@@ -98,7 +102,7 @@ void rle::parseComment(Board& b, string line) {
 			// files created by XLife. Standard method is not in comments.
 			break;
 		default:
-			// TODO Give warning about irregular comment
+			cerr << "Warning: irregular comment: " << line << endl;
 			break;
 	}
 }
@@ -123,10 +127,10 @@ void rle::parseDimension(Board& b, string line) {
 			} else if (m[1] == "rule") {
 				b.setRule(m[2]);
 			} else {
-				// TODO Unknown dimension handling
+				throw std::runtime_error("Unknown dimension: " + s);
 			}
 		} else {
-			// TODO Invalid format handling
+			throw std::runtime_error("Invalid formatting: " + s);
 		}
 
 		curr = i + 1;
